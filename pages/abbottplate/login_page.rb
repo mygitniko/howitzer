@@ -17,6 +17,17 @@ module AbbottPlate
       super
     end
 
+    def wait_for_ajax
+        Timeout.timeout(10) do
+          loop until finished_all_ajax_requests?
+        end
+    end
+
+    def finished_all_ajax_requests?
+        loop until page.evaluate_script('jQuery.active')
+        page.evaluate_script('jQuery.active').zero?
+    end
+
     def login(email, mobilenumber)
       log.info "Fill in login form with data with user: #{email} and mobilenumber #{mobilenumber}"
       set_email(email)
@@ -47,10 +58,12 @@ module AbbottPlate
     def register_click
       log.info "Register System"
       first("form > table a[type = 'button']").click
+      wait_for_ajax
     end
 
     def proceed_click
       click_button(button_locator(:proceed_button))
+      wait_for_ajax
     end
 
     def checkbox_click
